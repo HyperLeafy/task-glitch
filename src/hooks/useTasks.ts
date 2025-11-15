@@ -78,6 +78,9 @@ export function useTasks(): UseTasksState {
             { id: finalData[0]?.id ?? 'dup-1', title: 'Duplicate ID', revenue: 9999999999, timeTaken: -5, priority: 'Low', status: 'Done' } as any,
           ];
         }
+        // Filtering for handling issues Down the line
+        finalData = finalData.filter(temp => 
+          temp && (typeof temp.id === 'string') && (temp.id.trim() !== '') && (typeof temp.title === 'string') && (temp.title.trim() !== '') && Number.isFinite(temp.revenue) && Number.isFinite(temp.timeTaken) && temp.timeTaken > 0 );
         if (isMounted) setTasks(finalData);
       } catch (e: any) {
         if (isMounted) setError(e?.message ?? 'Failed to load tasks');
