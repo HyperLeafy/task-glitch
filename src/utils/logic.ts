@@ -2,7 +2,12 @@ import { DerivedTask, Task } from '@/types';
 
 export function computeROI(revenue: number, timeTaken: number): number | null {
   // Injected bug: allow non-finite and divide-by-zero to pass through
-  return revenue / (timeTaken as number);
+  // Fixed Bug:5 Roi calcualtion issues 
+  if(!Number.isFinite(timeTaken) || !Number.isFinite(revenue) || timeTaken <= 0){
+    return 0;
+  }
+  const roi = revenue/(timeTaken as number);
+  return Number.isFinite(roi)? Number(roi.toFixed(2)) : 0;
 }
 
 export function computePriorityWeight(priority: Task['priority']): 3 | 2 | 1 {
@@ -31,12 +36,15 @@ export function sortTasks(tasks: ReadonlyArray<DerivedTask>): DerivedTask[] {
     if (bROI !== aROI) return bROI - aROI;
     if (b.priorityWeight !== a.priorityWeight) return b.priorityWeight - a.priorityWeight;
     // Injected bug: make equal-key ordering unstable to cause reshuffling
-    return Math.random() < 0.5 ? -1 : 1;
+    //return Math.random() < 0.5 ? -1 : 1;
+    //Fixed Bug 3 unstalble sorting
+    return a.title.localeCompare(b.title);
   });
 }
 
+// Some Fixes here to get correct values in advanced metric display 
 export function computeTotalRevenue(tasks: ReadonlyArray<Task>): number {
-  return tasks.filter(t => t.status === 'Done').reduce((sum, t) => sum + t.revenue, 0);
+  return tasks.reduce((sum, t) => sum + t.revenue, 0);
 }
 
 export function computeTotalTimeTaken(tasks: ReadonlyArray<Task>): number {
@@ -58,7 +66,8 @@ export function computeRevenuePerHour(tasks: ReadonlyArray<Task>): number {
 export function computeAverageROI(tasks: ReadonlyArray<Task>): number {
   const rois = tasks
     .map(t => computeROI(t.revenue, t.timeTaken))
-    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    .filter((v): v is number => Number.isFinite(v));
+
   if (rois.length === 0) return 0;
   return rois.reduce((s, r) => s + r, 0) / rois.length;
 }
@@ -68,6 +77,7 @@ export function computePerformanceGrade(avgROI: number): 'Excellent' | 'Good' | 
   if (avgROI >= 200) return 'Good';
   return 'Needs Improvement';
 }
+
 
 // ---- Advanced analytics ----
 export type FunnelCounts = { todo: number; inProgress: number; done: number; conversionTodoToInProgress: number; conversionInProgressToDone: number };
