@@ -19,8 +19,11 @@ import {
 } from '@/utils/logic';
 
 function AppContent() {
-  const { loading, error, metrics, derivedSorted, addTask, updateTask, deleteTask, undoDelete, lastDeleted } = useTasksContext();
-  const handleCloseUndo = () => {};
+  // Fix for Bug 2 about snack bar and issue with deleted task item
+  const { loading, error, metrics, derivedSorted, addTask, updateTask, deleteTask, undoDelete, lastDeleted, setLastDeleted } = useTasksContext();
+  const handleCloseUndo = useCallback(() => {
+    setLastDeleted(null);
+  }, [lastDeleted])
   const [q, setQ] = useState('');
   const [fStatus, setFStatus] = useState<string>('All');
   const [fPriority, setFPriority] = useState<string>('All');
